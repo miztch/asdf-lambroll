@@ -27,7 +27,7 @@ sort_versions() {
 list_github_tags() {
 	git ls-remote --tags --refs "$GH_REPO" |
 		grep -o 'refs/tags/.*' | cut -d/ -f3- |
-		sed 's/^v//' # NOTE: You might want to adapt this sed to remove non-version strings from tags
+		sed 's/^v//' | grep -E '^[1-9][0-9]*\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' # NOTE: You might want to adapt this sed to remove non-version strings from tags
 }
 
 list_all_versions() {
@@ -40,12 +40,34 @@ download_release() {
 	local version filename url
 	version="$1"
 	filename="$2"
+	os="$3"
+	arch="$4"
 
 	# TODO: Adapt the release URL convention for lambroll
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	url="$GH_REPO/releases/download/v${version}/lambroll_v${version}_${os}_${arch}.tar.gz"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+}
+
+get_os() {
+	os=$(uname | tr '[:upper:]' '[:lower:]')
+	echo "${os}"
+}
+
+get_arch() {
+	local arch
+	arch=$(uname -m | tr '[:upper:]' '[:lower:]')
+	case ${arch} in
+	aarch64)
+		arch='arm64'
+		;;
+	x86_64)
+		arch='amd64'
+		;;
+	esac
+
+	echo "${arch}"
 }
 
 install_version() {
