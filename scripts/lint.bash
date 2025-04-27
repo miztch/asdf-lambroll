@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# lint this repo
+# lint the template/
 shellcheck --shell=bash --external-sources \
-	setup.bash \
+	bin/* --source-path=template/lib/ \
+	lib/* \
 	scripts/*
 
 shfmt --language-dialect bash --diff \
-	setup.bash \
-	scripts/*
+	./**/*
